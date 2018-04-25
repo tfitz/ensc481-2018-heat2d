@@ -1,0 +1,41 @@
+# Normalize these files
+
+## set the default behavior
+*      text=auto
+
+## LaTeX files
+*.tex  text
+*.tikz text
+*.bib  text
+
+## other misc. text files
+*.md   text
+
+## MS Word Files
+*.doc diff=word
+*.docx diff=word
+
+## Excel
+*.xsl  binary
+*.xlsx binary
+
+## Matlab
+*.m    text
+*.mat  binary
+*.slx  binary
+*.fig  binary
+
+## Mathematica
+*.nb   text
+
+## define some image files
+*.png  binary
+*.jpg  binary
+*.gif  binary
+*.xcf  binary
+*.svg  text
+
+## Define some common data files
+*.h5   binary
+*.dat  text
+
