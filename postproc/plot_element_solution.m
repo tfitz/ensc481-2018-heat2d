@@ -14,11 +14,12 @@ addRequired(p, 'qn', @isnumeric);
 
 
 %% Optional Inputs
-addParameter(p,       'e_in', 1:size(IEN,2), @isnumeric);
-addParameter(p, 'surf_alpha', 0.8, @isnumeric);
-addParameter(p, 'show_surfgridlines', false, @islogical);
-addParameter(p, 'edge_color', 'k');
-addParameter(p, 'edge_width', 1.2, @isnumeric);
+addParameter(p,               'e_in', 1:size(IEN,2), @isnumeric);
+addParameter(p,         'surf_alpha',           0.8, @isnumeric);
+addParameter(p, 'show_surfgridlines',         false, @islogical);
+addParameter(p,  'show_element_edge',          true, @islogical);
+addParameter(p,         'edge_color',           'k' );
+addParameter(p,         'edge_width',           1.2, @isnumeric);
 
 % HD surf options per element
 addParameter(p,  'e3_pts_per_edge', 3, @isnumeric);
@@ -29,15 +30,16 @@ addParameter(p,        'smoothing', 1, @isnumeric);
 %% Parse the inputs
 parse(p, axes_handle, IEN, ID, eltype, x, y, z, qn, varargin{:});
 
-e_in = p.Results.e_in;
-alpha0 = p.Results.surf_alpha;
+e_in           = p.Results.e_in;
+alpha0         = p.Results.surf_alpha;
 flag_gridlines = p.Results.show_surfgridlines;
-edge_color = p.Results.edge_color;
-edge_width = p.Results.edge_width;
+flag_edges     = p.Results.show_element_edge;
+edge_color     = p.Results.edge_color;
+edge_width     = p.Results.edge_width;
 
-e3_pts_per_edge = p.Results.e3_pts_per_edge;
+e3_pts_per_edge  = p.Results.e3_pts_per_edge;
 e10_pts_per_edge = p.Results.e10_pts_per_edge;
-flag_smoothing = p.Results.smoothing;
+flag_smoothing   = p.Results.smoothing;
 
 ned = size(ID,1);
 
@@ -68,7 +70,7 @@ for e = e_in
         
         h1 = plot_el_surface(...
             axes_handle, @el3_ShapeFunctions, xe, ye, ze, ue, ...
-            npoints, alpha0, flag_gridlines, edge_color, edge_width, opt_FaceColor);
+            npoints, alpha0, flag_gridlines, edge_color, edge_width, opt_FaceColor, flag_edges);
         hlist = [hlist, h1];
         
         
@@ -85,7 +87,7 @@ for e = e_in
         
         h1 = plot_el_surface(...
             axes_handle, @el10_ShapeFunctions, xe, ye, ze, ue, ...
-            npoints, alpha0, flag_gridlines, edge_color, edge_width, opt_FaceColor);
+            npoints, alpha0, flag_gridlines, edge_color, edge_width, opt_FaceColor, flag_edges);
         
         hlist = [hlist, h1];
         
@@ -98,7 +100,7 @@ end
 
 
 %%
-function h = plot_el_surface(axes_handle, ShapeFunc, xe,ye,ze,ue,npoints,alpha0,flag_gridlines, edge_color, edge_width, opt_FaceColor)
+function h = plot_el_surface(axes_handle, ShapeFunc, xe,ye,ze,ue,npoints,alpha0,flag_gridlines, edge_color, edge_width, opt_FaceColor, flag_edges)
 
 xi0 = linspace(-1,1,npoints);
 CData = zeros([npoints, npoints]);
@@ -116,6 +118,7 @@ for i1 = 1:npoints
         CData(i1,i2) = NN*ue;
     end
 end
+
 if flag_gridlines == 0
     h = surface(x1p, y1p, z1p, CData,'Parent',axes_handle,'EdgeColor','none', 'FaceColor', opt_FaceColor);
 else
@@ -125,7 +128,7 @@ end
 alpha(h, alpha0);
 
 % draw the edge of the element
-if( flag_gridlines == 0 )
+if flag_edges
     % add edges
     % line 1
     x1p = zeros(1,npoints-1);
