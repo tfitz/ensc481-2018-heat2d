@@ -12,6 +12,9 @@ flag_printoutput = p.Results.printoutput;
 
 %% open file
 fid = fopen(infile,'r');
+if fid < 0
+    error('Cannot locate file <%s>\n', infile);
+end
 
 %% index file
 fprintf_iter(flag_printoutput,'----------------------------------------------\n')
