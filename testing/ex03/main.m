@@ -24,12 +24,17 @@ nen = std_element_defs();
 
 %% Define parameters
 
-% BC:
-T_east  = 500;
-T_west = 100;
+% Material constants, Al 2024-T6
+alpha = 73e-6; % [m^2/s]
+k     = 237  ; % [W/m/K]
 
-% Material constants
-alpha = 1;
+% West BC: Dirichlet
+T_west = 500;
+
+% East BC: Convection
+h    = 30 ; % [ W/m^2/K ]
+Tinf = 50 ; % [deg C]
+hbar = h/k;
 
 %% Load the msh into matlab
 meshfile = 'plate1.msh';
@@ -77,9 +82,9 @@ g_list = zeros(ned,nnp);
 
 
 % east
-A = unique(IEN_BC_e(:));
-fix(1, A ) = 1;
-g_list(1, A) = T_east;
+% A = unique(IEN_BC_e(:));
+% fix(1, A ) = 1;
+% g_list(1, A) = T_east;
 
 % west
 A = unique(IEN_BC_w(:));
@@ -88,7 +93,7 @@ g_list(1, A) = T_west;
 
 
 %% generate or load gaussian quadrature information
-quad_rules = set_integration_rules( eltype );
+quad_rules = set_integration_rules( [eltype; eltype_BC_e] );
 
 %% Construct the IM and LM Matricies
 [ID, LM, neq, gg, nee, ng, idx_ff, idx_fr] = build_mesh(...
@@ -108,7 +113,15 @@ qn = zeros(ndofs,1);
 [K] = assemble_K(ned, nen, nnp, nel, eltype, ...
     x, y, IEN, LM, quad_rules);
 
-%% Apply BC's
+
+%%
+% Build Kcon
+% convecting on the east side:
+[Kcon, Fcon] = assemble_Kcon(ned, nen, nnp, nel_BC_e, eltype_BC_e, ...
+                          x, y, IEN_BC_e, ID, quad_rules, hbar, Tinf);
+K = K-Kcon;
+
+%% Apply Dirichlet BC's
 totaldofs = ned*nnp;
 q = zeros(totaldofs, 1);
 
@@ -126,7 +139,7 @@ end
 K_ff = K(idx_ff,idx_ff);
 K_fr = K(1:neq, idx_fr);
 
-R = zeros(neq,1);
+R = zeros(neq,1) + Fcon(1:neq);
 
 % solve:
 q(1:neq) = K_ff\( R - K_fr*q(idx_fr) );
